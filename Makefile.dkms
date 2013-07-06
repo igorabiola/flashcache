@@ -11,8 +11,8 @@ UTILS := /sbin/flashcache_load /sbin/flashcache_create /sbin/flashcache_destroy
 all: install
 
 .PHONY: install
-install: build utils
-	dkms install -m flashcache -v $(COMMIT_REV) -k $(KERNEL_VERSION)
+install: build boot_conf
+	dkms install -m flashcache -v $(COMMIT_REV) -k $(KERNEL_VERSION) --force
 
 .PHONY: build
 build: src_install
@@ -30,7 +30,7 @@ boot_conf: utils
 	if test -d /etc/initramfs-tools/hooks; then \
 		install -o root -g root src/flashcache.hook /etc/initramfs-tools/hooks/flashcache ; \
 		install -o root -g root src/utils/flashcache_scan /etc/initramfs-tools/scripts/init-premount/ ; \
-		update-initramfs -k $(shell uname -r) -u ; \
+		update-initramfs -k $(KERNEL_VERSION) -u ; \
 	fi
 
 .PHONY: utils
@@ -40,6 +40,6 @@ utils:
 .PHONY: clean
 clean:
 	$(MAKE) -f Makefile clean
-	dkms remove -m flashcache -v $(COMMIT_REV) --all
+	dkms remove -m flashcache -v $(COMMIT_REV) -k $(KERNEL_VERSION)
 	rm /etc/initramfs-tools/hooks/flashcache
 	rm /etc/initramfs-tools/scripts/init-premount/flashcache_scan
